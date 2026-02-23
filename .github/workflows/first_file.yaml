@@ -1,9 +1,31 @@
-on: push
+name: Python Syntax Check
+
+on: [push, pull_request]
+
 jobs:
-  first_job:
+  syntax-check:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
-      - name: Run a one-line script
-        run: echo "Hello, World! First Github Action Workflow"
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'  # or whichever version you use
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          # Optional: install flake8 for style checks
+          pip install flake8
+
+      - name: Check Python syntax
+        run: |
+          # Compile all Python files to check syntax
+          find . -name "*.py" -exec python -m py_compile {} \;
+
+      - name: Lint Python code (optional)
+        run: |
+          flake8 .
