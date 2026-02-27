@@ -1,5 +1,5 @@
-import requests
 import os
+import requests
 from dotenv import load_dotenv
 from elasticsearch import Elasticsearch
 
@@ -16,16 +16,25 @@ KIBANA_HEADERS = {
     "kbn-xsrf": "true",
     "Content-Type": "application/json",
     "Authorization": f"ApiKey {ELASTICSEARCH_API_KEY}",
-} 
-# Useful for Agent Builder API calls
+}
 
-es_client = Elasticsearch(ELASTICSEARCH_ENDPOINT, api_key=ELASTICSEARCH_API_KEY) # Elasticsearch client
+# Elasticsearch client
+es_client = Elasticsearch(
+    ELASTICSEARCH_ENDPOINT,
+    api_key=ELASTICSEARCH_API_KEY
+)
 
-## pr-data-search tool Creation
+# PR-data-search tool creation
 pr_data_search_tool = {
     "id": "pr_data_search",
     "type": "index_search",
-    "description": "Search internal security documents including incident reports, pentests, internal CVEs, security guidelines, and architecture decisions. Uses semantic search powered by ELSER to find relevant security information even without exact keyword matches. Returns documents with severity assessment and affected systems.",
+    "description": (
+        "Search internal security documents including incident reports, "
+        "pentests, internal CVEs, security guidelines, and architecture decisions. "
+        "Uses semantic search powered by ELSER to find relevant security information "
+        "even without exact keyword matches. Returns documents with severity assessment "
+        "and affected systems."
+    ),
     "tags": ["security", "semantic", "vulnerabilities"],
     "configuration": {
         "pattern": INDEX_NAME,
@@ -38,9 +47,8 @@ try:
         headers=KIBANA_HEADERS,
         json=pr_data_search_tool,
     )
-
     if response.status_code == 200:
-        print("Security pr-data search tool created successfully")    
+        print("Security pr-data search tool created successfully")
     else:
         print(f"Response: {response.text}")
 except Exception as e:

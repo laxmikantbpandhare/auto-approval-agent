@@ -16,11 +16,13 @@ repo = github_client.get_repo(REPO_NAME)
 def get_pr(pr_number: int):
     return repo.get_pull(pr_number)
 
+
 def get_all_open_prs():
     """
     Returns a list of all open PRs in the repository
     """
     return repo.get_pulls(state="open")
+
 
 def get_pr_files(pr):
     files = []
@@ -32,11 +34,14 @@ def get_pr_files(pr):
         })
     return files
 
+
 def comment_on_pr(pr, message: str):
     pr.create_issue_comment(message)
 
+
 def approve_pr(pr):
     pr.create_review(event="APPROVE")
+
 
 def merge_pr(pr):
     pr.merge()
