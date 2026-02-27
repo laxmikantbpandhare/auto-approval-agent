@@ -2,14 +2,26 @@ from langgraph.graph import StateGraph
 from typing import TypedDict
 import os
 import requests
-
 from github_client import get_pr, get_pr_files, comment_on_pr, approve_pr, merge_pr
 from risk_model import calculate_risk
 from dotenv import load_dotenv
+from langchain_openai import ChatOpenAI
+from transformers import pipeline
+import torch
 
+model_id = "TinyLlama/TinyLlama-1.1B-Chat-v1.0"
+pipe = pipeline(
+    "text-generation",
+    model="TinyLlama/TinyLlama-1.1B-Chat-v1.0"
+)
 load_dotenv()
-ELASTIC_HOST = os.environ["ELASTIC_HOST"]
-ELASTIC_API_KEY = os.environ["ELASTIC_API_KEY"]
+ELASTICSEARCH_ENDPOINT = os.environ["ELASTICSEARCH_ENDPOINT"]
+ELASTICSEARCH_API_KEY = os.environ["ELASTICSEARCH_API_KEY"]
+OPENAI_API_KEY = os.environ["OPENAI_API_KEY"]
+
+# llm = ChatOpenAI(
+#     model="gpt-4o-mini", temperature=0, openai_api_key=OPENAI_API_KEY
+# )
 
 # -----------------------
 # PR State
@@ -25,8 +37,8 @@ class PRState(TypedDict):
 # Elastic agent call
 # -----------------------
 def elastic_agent_run(task_name: str, task_input: str) -> str:
-    url = f"{ELASTIC_HOST}/api/agents/run"
-    headers = {"Authorization": f"ApiKey {ELASTIC_API_KEY}", "Content-Type": "application/json"}
+    url = f"{ELASTICSEARCH_ENDPOINT}/api/agents/run"
+    headers = {"Authorization": f"ApiKey {ELASTICSEARCH_API_KEY}", "Content-Type": "application/json"}
     payload = {"name": task_name, "input": task_input}
     try:
         resp = requests.post(url, headers=headers, json=payload)
@@ -59,7 +71,39 @@ def code_analysis_agent(state: PRState):
     Patches:
     {patches}
     """
+
+    print("prompt here")
+    print(prompt)
+    print("prompt ends here")
+
+    chunk_size = 1500  # tokens per chunk (safe under 2048)
+    chunks = [patches[i:i+chunk_size] for i in range(0, len(patches), chunk_size)]
+
+    for chunk in chunks:
+        prompt = f"Analyze the following PR chunk:\n{chunk}"
+        messages = [{"role": "user", "content": prompt}]
+        outputs = pipe(messages, max_new_tokens=256)
+
+    # messages = [
+    #     {"role": "user", "content": prompt}
+    # ]
+
+   # print(len(prompt))
+
+    # outputs = pipe(
+    #     messages,
+    #     max_new_tokens=256,
+    # )
+    print("generated text Here")
+    print(outputs[0]["generated_text"][-1])
+    print("generated text ends Here")
+
     text = elastic_agent_run("code_analysis", prompt).lower()
+    # Invoke
+    # response = llm.invoke("Hello!")
+    # print(response.content)
+    #print(text['choices'][0]['text'])
+    # print(text)
     complexity = "low"
     if "high" in text:
         complexity = "high"
@@ -101,8 +145,8 @@ def executor_agent(state: PRState):
         merge_pr(pr)
 
     # Push to Elastic for search/audit
-    url = f"{ELASTIC_HOST}/github-prs-analysis/_doc/{state['pr_number']}"
-    headers = {"Authorization": f"ApiKey {ELASTIC_API_KEY}", "Content-Type": "application/json"}
+    url = f"{ELASTICSEARCH_ENDPOINT}/github-prs-analysis/_doc/{state['pr_number']}"
+    headers = {"Authorization": f"ApiKey {ELASTICSEARCH_API_KEY}", "Content-Type": "application/json"}
     requests.put(url, headers=headers, json=state)
     return state
 
