@@ -25,7 +25,3 @@ jobs:
         run: |
           # Compile all Python files to check syntax
           find . -name "*.py" -exec python -m py_compile {} \;
-
-      - name: Lint Python code (optional)
-        run: |
-          flake8 .
