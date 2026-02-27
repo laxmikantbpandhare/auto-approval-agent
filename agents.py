@@ -76,6 +76,8 @@ def code_analysis_agent(state: PRState):
     print(prompt)
     print("prompt ends here")
 
+    print("Print Statements here")
+
     chunk_size = 1500  # tokens per chunk (safe under 2048)
     chunks = [patches[i:i+chunk_size] for i in range(0, len(patches), chunk_size)]
 
