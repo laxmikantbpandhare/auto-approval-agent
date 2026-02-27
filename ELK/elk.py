@@ -16,16 +16,22 @@ KIBANA_HEADERS = {
     "kbn-xsrf": "true",
     "Content-Type": "application/json",
     "Authorization": f"ApiKey {ELASTICSEARCH_API_KEY}",
-} 
+}
 # Useful for Agent Builder API calls
 
-es_client = Elasticsearch(ELASTICSEARCH_ENDPOINT, api_key=ELASTICSEARCH_API_KEY) # Elasticsearch client
+es_client = Elasticsearch(ELASTICSEARCH_ENDPOINT, 
+                          api_key=ELASTICSEARCH_API_KEY)  # Elasticsearch client
 
-## pr-data-search tool Creation
+# pr-data-search tool Creation
 pr_data_search_tool = {
     "id": "pr_data_search",
     "type": "index_search",
-    "description": "Search internal security documents including incident reports, pentests, internal CVEs, security guidelines, and architecture decisions. Uses semantic search powered by ELSER to find relevant security information even without exact keyword matches. Returns documents with severity assessment and affected systems.",
+    "description": "Search internal security documents \
+    including incident reports, pentests, internal CVEs, \
+    security guidelines, and architecture decisions. \
+    Uses semantic search powered by ELSER to find relevant \
+    security information even without exact keyword matches. \
+    Returns documents with severity assessment and affected systems.",
     "tags": ["security", "semantic", "vulnerabilities"],
     "configuration": {
         "pattern": INDEX_NAME,
