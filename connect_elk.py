@@ -2,7 +2,7 @@ from elasticsearch import Elasticsearch
 
 # Configuration from your GCP deployment
 ELASTIC_HOST = "https://my-elasticsearch-project-cf6846.es.us-central1.gcp.elastic.cloud"
-ELASTIC_API_KEY = "MnhnX2pwd0JBSi1hVjVZN3VkWVM6bjVhME5pdHNDT1NSdTdoVHRkXzBEUQ=="
+ELASTIC_API_KEY = "xyz"
 
 # 1. Initialize the client
 es = Elasticsearch(
